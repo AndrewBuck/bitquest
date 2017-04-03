@@ -49,6 +49,7 @@ public class SignTransaction {
 		}
 
 		// Make sure the player included their name on the last line for payment.
+		// TODO: Add a check to see if this is a prefix to a long name that doesn't fit on a sign and if so, upgrade it to the full name.
 		if(signText[3].length() > 0) {
 			this.payName = signText[3];
 		} else {

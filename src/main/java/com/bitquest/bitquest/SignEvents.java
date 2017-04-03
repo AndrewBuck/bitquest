@@ -62,6 +62,12 @@ public class SignEvents implements Listener {
 			SignTransaction signTransaction = new SignTransaction(lines);
 
 			if(signTransaction.isValid) {
+				// If the payee is 'me' then autocomplete the players name for them.
+				if(signTransaction.payName.equalsIgnoreCase("me")) {
+					lines[3] = player.getName();
+					signTransaction.payName = player.getName();
+				}
+
 				if(signTransaction.payName.equalsIgnoreCase(player.getName())) {
 					player.sendMessage(ChatColor.GREEN + "Shop created: Offering: " + signTransaction.itemMaterial.toString() + " Qty: " + signTransaction.quantity + " Price: " + signTransaction.price);
 				} else {

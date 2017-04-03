@@ -17,6 +17,7 @@ import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
@@ -1164,5 +1165,40 @@ public class  BitQuest extends JavaPlugin {
             }
         return null;
     }
+
+	// Moves a stack of items from one inventory to another and returns the number of items that were not able to be moved.
+	public static int transferItemStack(ItemStack items, Inventory fromInventory, Inventory toInventory) {
+		int originalAmount = items.getAmount();
+		int numNotRemoved;
+		int numNotStored;
+
+		// If one of the inventories is null we can't move any items so return the full amount as the unmoved amount.
+		if(fromInventory == null || toInventory == null)
+			return originalAmount;
+
+		// Try to remove the requested items from the fromInventory and count how many we could not collect.
+		HashMap<Integer,ItemStack> fromReturn = fromInventory.removeItem(items);
+		if(fromReturn.isEmpty())
+			numNotRemoved = 0;
+		else
+			numNotRemoved = fromReturn.get(0).getAmount();
+			
+		// Try to put the removedItems into the toInventory and count how many don't fit.
+		int numToStore = originalAmount - numNotRemoved;
+		items.setAmount(numToStore);
+		HashMap<Integer,ItemStack> toReturn = toInventory.addItem(items);
+		if(toReturn.isEmpty())
+			numNotStored = 0;
+		else
+			numNotStored = toReturn.get(0).getAmount();
+
+		// If we took out more than we were able to store we need to return the unstored items back to the fromInventory.
+		if(numNotStored > 0) {
+			items.setAmount(numNotStored);
+			fromInventory.addItem(items);
+		}
+
+		return numNotRemoved + numNotStored;
+	}
 }
 

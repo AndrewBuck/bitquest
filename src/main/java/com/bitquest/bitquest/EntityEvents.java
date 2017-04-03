@@ -5,6 +5,7 @@ import com.mixpanel.mixpanelapi.MixpanelAPI;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -809,11 +810,36 @@ public class EntityEvents implements Listener {
 				// TODO: Restore this self sale check when code is done.
 				//if(!signTransaction.payName.equalsIgnoreCase(p.getName())) {
 				if(true) {
+					ItemStack items = new ItemStack(signTransaction.itemMaterial, signTransaction.quantity);
+					Inventory chestInventory = ((Chest)attached.getState()).getInventory();
+					Inventory playerInventory = p.getInventory();
+					int numNotTransferred = 0;
+
 					if(signTransaction.saleType.equals("buy")) {
-						p.sendMessage(ChatColor.GREEN + "Buying " + signTransaction.quantity + " " + signTransaction.itemMaterial.toString() + " for " + signTransaction.price + " bits from player " + signTransaction.payName);
+						p.sendMessage(ChatColor.GREEN + "Buying " + signTransaction.quantity + " "
+								+ signTransaction.itemMaterial.toString() + " for "
+								+ signTransaction.price + " bits from player " + signTransaction.payName);
+
+						numNotTransferred = BitQuest.transferItemStack(items, chestInventory, playerInventory);
 					} else if(signTransaction.saleType.equals("sell")) {
-						p.sendMessage(ChatColor.GREEN + "Selling " + signTransaction.quantity + " " + signTransaction.itemMaterial.toString() + " for " + signTransaction.price + " bits to player " + signTransaction.payName);
+						p.sendMessage(ChatColor.GREEN + "Selling " + signTransaction.quantity + " "
+								+ signTransaction.itemMaterial.toString() + " for "
+								+ signTransaction.price + " bits to player " + signTransaction.payName);
+
+						numNotTransferred = BitQuest.transferItemStack(items, playerInventory, chestInventory);
 					}
+
+					if(numNotTransferred > 0) {
+						int numPurchased = signTransaction.quantity - numNotTransferred;
+						double pricePerItem = (double)signTransaction.price / (double)signTransaction.quantity;
+						double salePrice = numPurchased * pricePerItem;
+
+						p.sendMessage(ChatColor.RED + "Transferred " + numPurchased + " for " + salePrice + " bits.");
+					}
+					else {
+						p.sendMessage(ChatColor.GREEN + "Success!");
+					}
+
 				}
 			}
 		}

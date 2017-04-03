@@ -6,6 +6,9 @@ import com.mixpanel.mixpanelapi.MixpanelAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
+import org.bukkit.block.Block;
+import org.bukkit.Material;
+import org.bukkit.material.Sign;
 import org.bukkit.World.Environment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,6 +21,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.UUID;
+import java.lang.*;
 
 /**
  * Created by cristian on 12/17/15.
@@ -29,13 +33,13 @@ public class SignEvents implements Listener {
 	}
 	@EventHandler
 	public void onSignChange(SignChangeEvent event) throws ParseException, org.json.simple.parser.ParseException, IOException {
+		final String specialCharacter = "^";
+		final String[] lines = event.getLines();
+		final String signText = lines[0] + lines[1] + lines[2] + lines[3];
 
 		final Player player = event.getPlayer();
 		// Check that the world is overworld
 		if(!event.getBlock().getWorld().getName().endsWith("_nether") && !event.getBlock().getWorld().getName().endsWith("_end")) {
-			final String specialCharacter = "^";
-			final String[] lines = event.getLines();
-			final String signText = lines[0] + lines[1] + lines[2] + lines[3];
 			Chunk chunk = event.getBlock().getWorld().getChunkAt(event.getBlock().getLocation());
 
 			if (signText.length() > 0 && signText.substring(0,1).equals(specialCharacter) && signText.substring(signText.length()-1).equals(specialCharacter)) {
@@ -51,6 +55,23 @@ public class SignEvents implements Listener {
 			player.sendMessage(ChatColor.RED + "No claiming in the end!");
 		}
 
+		// Check to see if the sign is a sale sign for a player market.
+		Sign sign = (Sign) event.getBlock().getState().getData();
+		Block attached = event.getBlock().getRelative(sign.getAttachedFace());
+		if(attached.getType() == Material.CHEST && (lines[0].equalsIgnoreCase("buy") || lines[0].equalsIgnoreCase("sell"))) {
+			SignTransaction signTransaction = new SignTransaction(lines);
+
+			if(signTransaction.isValid) {
+				if(signTransaction.payName.equalsIgnoreCase(player.getName())) {
+					player.sendMessage(ChatColor.GREEN + "Shop created: Offering: " + signTransaction.itemMaterial.toString() + " Qty: " + signTransaction.quantity + " Price: " + signTransaction.price);
+				} else {
+					player.sendMessage(ChatColor.RED + "ERROR: You must include your name at the bottom of a sale sign to allow for payment.");
+				}
+			} else {
+				player.sendMessage(ChatColor.RED + signTransaction.errorMessage);
+			}
+		}
+	
 	}
 }
 

@@ -17,6 +17,8 @@ import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -1146,6 +1148,21 @@ public class  BitQuest extends JavaPlugin {
             }
         }
         return true;
+    }
+
+    public static Block getBlockSignIsAttachedTo(Block block) {
+        if (block.getType().equals(Material.WALL_SIGN))
+            switch (block.getData()) {
+                case 2:
+                    return block.getRelative(BlockFace.SOUTH);
+                case 3:
+                    return block.getRelative(BlockFace.NORTH);
+                case 4:
+                    return block.getRelative(BlockFace.EAST);
+                case 5:
+                    return block.getRelative(BlockFace.WEST);
+            }
+        return null;
     }
 }
 

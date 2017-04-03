@@ -5,6 +5,8 @@ import com.mixpanel.mixpanelapi.MixpanelAPI;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
+import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -777,6 +779,8 @@ public class EntityEvents implements Listener {
 
         Block b = event.getClickedBlock();
         Player p = event.getPlayer();
+
+	// Check to see if the block the player clicked on is protected.
         if(b!=null && PROTECTED_BLOCKS.contains(b.getType())) {
             // If block's inventory has "public" in it, allow the player to interact with it.
             if(b.getState() instanceof InventoryHolder) {
@@ -791,6 +795,29 @@ public class EntityEvents implements Listener {
                 p.sendMessage(ChatColor.RED+"You don't have permission to do that!");
             }
         }
+
+	// Check to see if the block the player clicked on was a buy/sell sign.
+	if(b != null && b.getType() == Material.WALL_SIGN) {
+		Sign sign = (Sign)b.getState();
+		String[] lines = sign.getLines();
+		Block attached = BitQuest.getBlockSignIsAttachedTo(b);
+		if(attached.getType() == Material.CHEST && (lines[0].equalsIgnoreCase("buy") || lines[0].equalsIgnoreCase("sell"))) {
+			SignTransaction signTransaction = new SignTransaction(lines);
+
+			if(signTransaction.isValid) {
+				// Do not allow player to buy/sell from themselves.
+				// TODO: Restore this self sale check when code is done.
+				//if(!signTransaction.payName.equalsIgnoreCase(p.getName())) {
+				if(true) {
+					if(signTransaction.saleType.equals("buy")) {
+						p.sendMessage(ChatColor.GREEN + "Buying " + signTransaction.quantity + " " + signTransaction.itemMaterial.toString() + " for " + signTransaction.price + " bits from player " + signTransaction.payName);
+					} else if(signTransaction.saleType.equals("sell")) {
+						p.sendMessage(ChatColor.GREEN + "Selling " + signTransaction.quantity + " " + signTransaction.itemMaterial.toString() + " for " + signTransaction.price + " bits to player " + signTransaction.payName);
+					}
+				}
+			}
+		}
+	}
 
     }
 

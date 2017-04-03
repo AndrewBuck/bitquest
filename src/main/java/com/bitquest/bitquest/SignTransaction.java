@@ -45,7 +45,7 @@ public class SignTransaction {
 			this.price = Integer.parseInt(priceLineItems[1]);
 		} else {
 			this.quantity = 1;
-			this.price = Integer.parseInt(signText[2].toLowerCase().replace("b", ""));
+			this.price = Integer.parseInt(signText[2].toLowerCase().replace(" ", "").replace("b", ""));
 		}
 
 		// Make sure the player included their name on the last line for payment.

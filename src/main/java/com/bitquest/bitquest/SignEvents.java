@@ -63,6 +63,7 @@ public class SignEvents implements Listener {
 
 			if(signTransaction.isValid) {
 				// If the payee is 'me' then autocomplete the players name for them.
+				// TODO: Check to make sure the players name is not too long for the sign.
 				if(signTransaction.payName.equalsIgnoreCase("me")) {
 					lines[3] = player.getName();
 					signTransaction.payName = player.getName();

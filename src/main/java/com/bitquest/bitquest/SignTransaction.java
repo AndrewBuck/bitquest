@@ -1,8 +1,10 @@
 package com.bitquest.bitquest;
 
+import org.bukkit.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.block.Block;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 
 public class SignTransaction {
 
@@ -13,11 +15,13 @@ public class SignTransaction {
 	public int quantity;
 	public int price;
 	public String payName;
+	Player player;
 
 	public SignTransaction(String[] signText) {
 		this.isValid = false;
 		this.quantity = 0;
 		this.price = 0;
+		this.player = null;
 
 		// Determine if this is a buy or sell sign and sanitize the input.
 		if(signText[0].equalsIgnoreCase("buy")) {
@@ -53,6 +57,21 @@ public class SignTransaction {
 		if(signText[3].length() > 0) {
 			this.payName = signText[3];
 		} else {
+			this.errorMessage = "ERROR: The last line of a sale sign must be a player name to credit/charge for the sale.";
+			return;
+		}
+
+		// Find the bukkit player instance for the player whose name is on the sign.
+		for (OfflinePlayer p : Bukkit.getOfflinePlayers()) {
+			// TODO: Add option to match the name if the sign contains a prefix of the name at
+			// least N characters long to handle player names that don't fit on a sign.
+			if(p.getName().equalsIgnoreCase(signText[3])) {
+				this.player = p.getPlayer();
+				break;
+			}
+		}
+
+		if(this.player == null) {
 			this.errorMessage = "ERROR: The last line of a sale sign must be a player name to credit/charge for the sale.";
 			return;
 		}

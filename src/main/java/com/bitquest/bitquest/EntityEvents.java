@@ -807,13 +807,13 @@ public class EntityEvents implements Listener {
 
 			if(signTransaction.isValid) {
 				// Do not allow player to buy/sell from themselves.
-				// TODO: Restore this self sale check when code is done.
-				//if(!signTransaction.payName.equalsIgnoreCase(p.getName())) {
-				if(true) {
+				if(!signTransaction.payName.equalsIgnoreCase(p.getName())) {
 					ItemStack items = new ItemStack(signTransaction.itemMaterial, signTransaction.quantity);
 					Inventory chestInventory = ((Chest)attached.getState()).getInventory();
 					Inventory playerInventory = p.getInventory();
 					int numNotTransferred = 0;
+					User sendingUser = null;
+					User receivingUser = null;
 
 					if(signTransaction.saleType.equals("buy")) {
 						p.sendMessage(ChatColor.GREEN + "Buying " + signTransaction.quantity + " "
@@ -821,31 +821,44 @@ public class EntityEvents implements Listener {
 								+ signTransaction.price + " bits from player " + signTransaction.payName);
 
 						numNotTransferred = BitQuest.transferItemStack(items, chestInventory, playerInventory);
+						sendingUser = new User(p);
+						receivingUser = new User(signTransaction.player);
 					} else if(signTransaction.saleType.equals("sell")) {
 						p.sendMessage(ChatColor.GREEN + "Selling " + signTransaction.quantity + " "
 								+ signTransaction.itemMaterial.toString() + " for "
 								+ signTransaction.price + " bits to player " + signTransaction.payName);
 
 						numNotTransferred = BitQuest.transferItemStack(items, playerInventory, chestInventory);
+						sendingUser = new User(signTransaction.player);
+						receivingUser = new User(p);
 					}
 
+					int numPurchased = signTransaction.quantity - numNotTransferred;
+					double salePrice;
 					if(numNotTransferred > 0) {
-						int numPurchased = signTransaction.quantity - numNotTransferred;
 						double pricePerItem = (double)signTransaction.price / (double)signTransaction.quantity;
-						double salePrice = numPurchased * pricePerItem;
+						salePrice = numPurchased * pricePerItem;
 
 						p.sendMessage(ChatColor.RED + "Transferred " + numPurchased + " for " + salePrice + " bits.");
 					}
 					else {
 						p.sendMessage(ChatColor.GREEN + "Success!");
+						salePrice = signTransaction.price;
 					}
 
+					if(numPurchased > 0) {
+						// TODO: Need to check if the payment fails, and if so need to return the inventory transferred.
+						sendingUser.wallet.payment((int)Math.ceil(100.0*salePrice), receivingUser.wallet.address);
+
+						// TODO: Update scoreboards and send messages if the players are online.  See BitQuest.java:903
+					}
 				}
 			}
 		}
 	}
 
     }
+
 
     @EventHandler
     void onPlayerBucketFill(PlayerBucketFillEvent event) {

@@ -59,16 +59,15 @@ public class SignEvents implements Listener {
 		Sign sign = (Sign) event.getBlock().getState().getData();
 		Block attached = event.getBlock().getRelative(sign.getAttachedFace());
 		if(attached.getType() == Material.CHEST && (lines[0].equalsIgnoreCase("buy") || lines[0].equalsIgnoreCase("sell"))) {
+			// Sell signs must use the players own name, you can't offer to buy on someone else's behalf.
+			// If the payee is 'me' then autocomplete the players name for them.
+			// TODO: Check to make sure the players name is not too long for the sign.
+			if(lines[0].equalsIgnoreCase("sell") || lines[3].equalsIgnoreCase("me"))
+				lines[3] = player.getName();
+
 			SignTransaction signTransaction = new SignTransaction(lines);
 
 			if(signTransaction.isValid) {
-				// If the payee is 'me' then autocomplete the players name for them.
-				// TODO: Check to make sure the players name is not too long for the sign.
-				if(signTransaction.payName.equalsIgnoreCase("me")) {
-					lines[3] = player.getName();
-					signTransaction.payName = player.getName();
-				}
-
 				if(signTransaction.payName.equalsIgnoreCase(player.getName())) {
 					player.sendMessage(ChatColor.GREEN + "Shop created: Offering: " + signTransaction.itemMaterial.toString() + " Qty: " + signTransaction.quantity + " Price: " + signTransaction.price);
 				} else {

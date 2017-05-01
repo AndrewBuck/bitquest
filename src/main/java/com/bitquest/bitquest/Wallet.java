@@ -493,13 +493,13 @@ public class Wallet {
             in.close();
 
             if (responseCode == 200||responseCode==201) {
-                if(BitQuest.HD_ROOT_ADDRESS!=null) {
-                    System.out.println(BitQuest.REDIS.decrBy("payment_balance:"+BitQuest.HD_ROOT_ADDRESS,fees));
-                    System.out.println(BitQuest.REDIS.decrBy("final_balance:"+BitQuest.HD_ROOT_ADDRESS,fees));
-                } else {
-                    System.out.println(BitQuest.REDIS.decrBy("payment_balance:"+BitQuest.WORLD_ADDRESS,fees));
-                    System.out.println(BitQuest.REDIS.decrBy("final_balance:"+BitQuest.WORLD_ADDRESS,fees));
-                }
+//                if(BitQuest.HD_ROOT_ADDRESS!=null) {
+//                    System.out.println(BitQuest.REDIS.decrBy("payment_balance:"+BitQuest.HD_ROOT_ADDRESS,fees));
+//                    System.out.println(BitQuest.REDIS.decrBy("final_balance:"+BitQuest.HD_ROOT_ADDRESS,fees));
+//                } else {
+//                    System.out.println(BitQuest.REDIS.decrBy("payment_balance:"+BitQuest.WORLD_ADDRESS,fees));
+//                    System.out.println(BitQuest.REDIS.decrBy("final_balance:"+BitQuest.WORLD_ADDRESS,fees));
+//                }
 
                 return true;
             } else {
@@ -843,6 +843,17 @@ public class Wallet {
             System.out.println(inputLine);
             return false;
 
+        }
+    }
+    public String url() {
+        if(BitQuest.BLOCKCHAIN.equals("btc/main")) {
+            return "live.blockcypher.com/btc/address/"+address;
+        } else if(BitQuest.BLOCKCHAIN.equals("doge/main")) {
+            return "live.blockcypher.com/doge/address/"+address;
+        } else if(BitQuest.BLOCKCHAIN.equals("btc/test3")) {
+            return "live.blockcypher.com/btc-testnet/address/"+address;
+        } else {
+            return null;
         }
     }
 }

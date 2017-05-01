@@ -142,6 +142,10 @@ public class InventoryEvents implements Listener {
 
 
                             if(user.wallet.payment(sat, bitQuest.wallet.address) == true) {
+                                // used to cover fees for each /transaction and dumping cold storage to hot wallets
+                                if(BitQuest.MINER_FEE_ADDRESS!=null) {
+                                    bitQuest.wallet.payment(sat/2,BitQuest.MINER_FEE_ADDRESS);
+                                }
                                 ItemStack item = event.getCurrentItem();
                                 ItemMeta meta = item.getItemMeta();
                                 ArrayList<String> Lore = new ArrayList<String>();
@@ -161,10 +165,13 @@ public class InventoryEvents implements Listener {
 
                                     // Create an event
                                     org.json.JSONObject sentEvent = bitQuest.messageBuilder.event(player.getUniqueId().toString(), "Purchase", null);
+                                    org.json.JSONObject sentCharge = bitQuest.messageBuilder.trackCharge(player.getUniqueId().toString(), sat/200, null);
 
 
                                     ClientDelivery delivery = new ClientDelivery();
                                     delivery.addMessage(sentEvent);
+                                    delivery.addMessage(sentCharge);
+
 
                                     MixpanelAPI mixpanel = new MixpanelAPI();
                                     mixpanel.deliver(delivery);
@@ -211,8 +218,9 @@ public class InventoryEvents implements Listener {
 
                              System.out.println("[sell] " + player.getName() + " -> " + clicked.getType());
                              player.sendMessage(ChatColor.YELLOW + "Selling " + clicked.getType() + "...");
-                             player.getInventory().removeItem(trade.itemStack);
                              if (bitQuest.wallet.payment(sat, user.wallet.address)) {
+                                 player.getInventory().removeItem(trade.itemStack);
+
                                  player.sendMessage(ChatColor.GREEN + "You sold " + clicked.getType() + " for " + sat / 100);
                                  bitQuest.REDIS.incr("stock:" + trade.itemStack.getType());
                                  System.out.println("[sell] stock: " + bitQuest.REDIS.get("stock:" + trade.itemStack.getType()));
